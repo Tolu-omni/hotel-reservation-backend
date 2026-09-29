@@ -21,7 +21,7 @@ public class PaystackService {
  public PaystackService(@Value("${paystack.base-url}")String base,@Value("${paystack.secret-key}")String key,@Value("${frontend.base-url:http://localhost:3000}")String front,PaymentRepository p,BookingService b,PaymentSettlement s){var factory=new org.springframework.http.client.SimpleClientHttpRequestFactory();factory.setConnectTimeout(5000);factory.setReadTimeout(15000);client=RestClient.builder().requestFactory(factory).baseUrl(base).build();secret=key;frontend=front;payments=p;bookings=b;settlement=s;}
  private void testOnly(){if(secret==null||!secret.startsWith("sk_test_"))throw new IllegalArgumentException("Configure a Paystack TEST secret. Live payments are disabled in this presentation build.");}
  @Transactional public PaystackResponse initializePayment(Long bookingId){
-  testOnly();Booking b=bookings.lockBooking(bookingId);BookingAccess.require(b);
+  Booking b=bookings.lockBooking(bookingId);BookingAccess.require(b);testOnly();
   if(b.getStatus()!=BookingStatus.PENDING||!BookingService.blocks(b))throw new IllegalArgumentException("This reservation is not payable or the 30-minute hold expired");
   if(payments.existsByBookingIdAndStatus(bookingId,PaymentStatus.SUCCESSFUL))throw new IllegalArgumentException("Payment already recorded");
   Payment p=payments.findFirstByBookingIdAndStatusOrderByCreatedAtDesc(bookingId,PaymentStatus.PENDING).filter(x->x.getPaymentMethod()==PaymentMethod.CARD&&x.getTransactionReference().startsWith("PAYSTACK-")).orElse(null);
