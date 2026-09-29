@@ -1,0 +1,11 @@
+.git
+.idea
+.mvn
+target
+*.log
+.env
+.env.*
+*.local
+Dockerfile*
+README*
+HELP.md
